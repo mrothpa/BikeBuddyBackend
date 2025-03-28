@@ -13,6 +13,14 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class ApiController extends AbstractController
 {
+    private EntityManagerInterface $entity_manager;
+    private SerializerInterface $serializer;
+
+    public function __construct(EntityManagerInterface $entity_manager, SerializerInterface $serializer) {
+        $this->entity_manager = $entity_manager;
+        $this->serializer = $serializer;
+    }
+
     #[Route('/api/users', name: 'get_users', methods: ['GET'])]
     public function getUsers(EntityManagerInterface $entityManager): JsonResponse
     {
