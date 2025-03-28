@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UsersRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -27,6 +29,17 @@ class Users
 
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
+
+    /**
+     * @var Collection<int, Problems>
+     */
+    #[ORM\OneToMany(targetEntity: Problems::class, mappedBy: 'user_id')]
+    private Collection $problems;
+
+    public function __construct()
+    {
+        $this->problems = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -77,6 +90,36 @@ class Users
     public function setCreatedAt(\DateTimeImmutable $created_at): static
     {
         $this->created_at = $created_at;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Problems>
+     */
+    public function getProblems(): Collection
+    {
+        return $this->problems;
+    }
+
+    public function addProblem(Problems $problem): static
+    {
+        if (!$this->problems->contains($problem)) {
+            $this->problems->add($problem);
+            $problem->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProblem(Problems $problem): static
+    {
+        if ($this->problems->removeElement($problem)) {
+            // set the owning side to null (unless already changed)
+            if ($problem->getUserId() === $this) {
+                $problem->setUserId(null);
+            }
+        }
 
         return $this;
     }
