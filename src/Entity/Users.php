@@ -14,17 +14,19 @@ class Users
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+
+    #[Groups(['problem_read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'problem_read'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
     #[ORM\Column(length: 31)]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'problem_read'])]
     private ?string $role = null;
 
     #[ORM\Column]

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Users;
+use App\Entity\Problems;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -62,6 +63,50 @@ class ApiController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['mesage' => 'User created successfully'], 201);
+    }
 
+    #[Route('/api/problems', name: 'get_problems', methods: ['GET'])]
+    public function getProblems(EntityManagerInterface $entityManager, SerializerInterface $serializer): JsonResponse
+    {
+        $problems = $entityManager->getRepository(Problems::class)->findAll();
+        
+        $json = $serializer->serialize($problems, 'json', ['groups' => 'problem_read']);
+
+        return new JsonResponse($json,200, [], true);
+    }
+
+    #[Route('/api/problems', name:'create_user', methods: ['POST'])]
+    public function createProblem(Request $request, ValidatorInterface $validator, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['user_id'], $data['title'], $data['description'], $data['latitude'], $data['longitude'], $data['category'], $data['status'])) {
+            return $this->json(['error' => 'Invalid input'], 400);
+        }
+
+        $user = $entityManager->getRepository(Users::class)->find($data['user_id']);
+        if (!$user) {
+            return $this->json(['error'=> 'User not found'], 404);
+        }
+
+        $problem = new Problems();
+        $problem->setUserId($user);
+        $problem->setTitle($data['title']);
+        $problem->setDescription($data['description']);
+        $problem->setLatitude($data['latitude']);
+        $problem->setLongitude($data['longitude']);
+        $problem->setCategory($data['category']);
+        $problem->setStatus($data['status']);
+        $problem->setCreatedAt(new \DateTimeImmutable());
+
+        $errors = $validator->validate($problem);
+        if (count($errors) > 0) {
+            return new JsonResponse(['message' => 'Invalid data', 'errors' => (string) $errors], 400);
+        }
+
+        $entityManager->persist($problem);
+        $entityManager->flush();
+
+        return new JsonResponse(['mesage' => 'Problem created successfully'], 201);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ProblemsRepository;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -12,28 +13,37 @@ class Problems
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+
+    #[Groups(['problem_read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'problems')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['problem_read'])]
     private ?Users $user_id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['problem_read'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['problem_read'])]
     private ?string $description = null;
 
     #[ORM\Column]
+    #[Groups(['problem_read'])]
     private ?float $latitude = null;
 
     #[ORM\Column]
+    #[Groups(['problem_read'])]
     private ?float $longitude = null;
 
     #[ORM\Column(length: 31)]
+    #[Groups(['problem_read'])]
     private ?string $category = null;
 
     #[ORM\Column(length: 31)]
+    #[Groups(['problem_read'])]
     private ?string $status = null;
 
     #[ORM\Column]
