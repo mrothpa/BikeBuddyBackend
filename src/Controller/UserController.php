@@ -58,3 +58,10 @@ class UserController extends AbstractController
         return new JsonResponse(['mesage' => 'User created successfully'], 201);
     }
 }
+
+// use Symfony\Component\Uid\Uuid;
+
+// public function findUserById(string $id): ?Users
+// {
+//     return $this->find(Uuid::fromString($id));
+// }

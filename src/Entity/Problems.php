@@ -6,21 +6,21 @@ use App\Repository\ProblemsRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\UuidV4;
 
 #[ORM\Entity(repositoryClass: ProblemsRepository::class)]
 class Problems
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-
+    #[ORM\Column(type: 'uuid', unique: true)]
     #[Groups(['problem_read'])]
-    private ?int $id = null;
+    private ?Uuid $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'problems')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['problem_read'])]
-    private ?Users $user_id = null;
+    private ?Users $user = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['problem_read'])]
@@ -49,19 +49,24 @@ class Problems
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
 
-    public function getId(): ?int
+    public function __construct()
+    {
+        $this->id = Uuid::v4();
+    }
+
+    public function getId(): ?Uuid
     {
         return $this->id;
     }
 
-    public function getUserId(): ?Users
+    public function getUser(): ?Users
     {
-        return $this->user_id;
+        return $this->user;
     }
 
-    public function setUserId(?Users $user_id): static
+    public function setUser(?Users $user): self
     {
-        $this->user_id = $user_id;
+        $this->user = $user;
 
         return $this;
     }

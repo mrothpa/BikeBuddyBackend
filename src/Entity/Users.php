@@ -7,16 +7,16 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\UuidV4;
 
 #[ORM\Entity(repositoryClass: UsersRepository::class)]
 class Users
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-
+    #[ORM\Column(type: 'uuid', unique: true)]
     #[Groups(['user_read', 'problem_read'])]
-    private ?int $id = null;
+    private ?Uuid $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
     #[Groups(['user_read', 'problem_read'])]
@@ -40,10 +40,11 @@ class Users
 
     public function __construct()
     {
+        $this->id = Uuid::v4();
         $this->problems = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function getId(): ?Uuid
     {
         return $this->id;
     }

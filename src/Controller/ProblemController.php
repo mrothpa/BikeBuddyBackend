@@ -47,7 +47,7 @@ class ProblemController extends AbstractController
         }
 
         $problem = new Problems();
-        $problem->setUserId($user);
+        $problem->setUser($user);
         $problem->setTitle($data['title']);
         $problem->setDescription($data['description']);
         $problem->setLatitude($data['latitude']);
