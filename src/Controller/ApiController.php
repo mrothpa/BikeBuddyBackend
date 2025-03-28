@@ -23,20 +23,13 @@ class ApiController extends AbstractController
     }
 
     #[Route('/api/users', name: 'get_users', methods: ['GET'])]
-    public function getUsers(EntityManagerInterface $entityManager): JsonResponse
+    public function getUsers(EntityManagerInterface $entityManager, SerializerInterface $serializer): JsonResponse
     {
         $users = $entityManager->getRepository(Users::class)->findAll();
-        $data = [];
 
-        foreach ($users as $user) {
-            $data[] = [
-                'id'=> $user->getId(),
-                'email'=> $user->getEmail(),
-                'role'=> $user->getRole(),
-            ];
-        }
+        $json = $serializer->serialize($users, 'json', ['groups' => 'user_read']);
 
-        return $this->json($data);
+        return new JsonResponse($json, 200, [], true);
     }
 
     #[Route('/api/users', name:'create_user', methods: ['POST'])]
