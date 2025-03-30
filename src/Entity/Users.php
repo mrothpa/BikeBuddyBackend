@@ -49,6 +49,12 @@ class Users
         return $this->id;
     }
 
+    public function setId(Uuid $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
     public function getEmail(): ?string
     {
         return $this->email;
@@ -109,7 +115,7 @@ class Users
     {
         if (!$this->problems->contains($problem)) {
             $this->problems->add($problem);
-            $problem->setUserId($this);
+            $problem->setUser($this);
         }
 
         return $this;
@@ -119,8 +125,8 @@ class Users
     {
         if ($this->problems->removeElement($problem)) {
             // set the owning side to null (unless already changed)
-            if ($problem->getUserId() === $this) {
-                $problem->setUserId(null);
+            if ($problem->getUser() === $this) {
+                $problem->setUser(null);
             }
         }
 

@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Uid\Uuid;
 
 class UserController extends AbstractController
 {
@@ -42,6 +43,7 @@ class UserController extends AbstractController
         }
 
         $user = new Users();
+        // $user->setId(Uuid::v4());
         $user->setEmail($data['email']);
         $user->setPassword(password_hash($data['password'], PASSWORD_BCRYPT));
         $user->setRole($data['role']);
