@@ -12,6 +12,8 @@
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "^3.3",
         "nelmio/cors-bundle": "^2.5",
+        "paragonie/paseto": "^3.4",
+        "paragonie/sodium_compat": "^2.1",
         "phpdocumentor/reflection-docblock": "^5.6",
         "phpstan/phpdoc-parser": "^2.1",
         "symfony/asset": "7.2.*",
