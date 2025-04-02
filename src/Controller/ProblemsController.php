@@ -112,4 +112,20 @@ class ProblemsController extends AbstractController
 
         return new JsonResponse($json,200, [], true);
     }
+
+    #[Route('/api/problems/{id}', name: 'get_problem_by_id', methods: ['GET'])]
+    public function getProblemById(string $id, SerializerInterface $serializer): JsonResponse
+    {
+        // Problem anhand der ID suchen
+        $problem = $this->entity_manager->getRepository(Problems::class)->find(Uuid::fromString($id));
+
+        if (!$problem) {
+            return new JsonResponse(['error' => 'Problem not found'], 404);
+        }
+
+        // Problem serialisieren
+        $json = $serializer->serialize($problem, 'json', ['groups' => 'problem_read']);
+
+        return new JsonResponse($json, 200, [], true);
+    }
 }
