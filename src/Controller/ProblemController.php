@@ -22,7 +22,7 @@ class ProblemController extends AbstractController
         $this->serializer = $serializer;
     }
 
-    #[Route('/api/problems', name: 'get_problems', methods: ['GET'])]
+    #[Route('/api/problem', name: 'get_problems', methods: ['GET'])]
     public function getProblems(EntityManagerInterface $entityManager, SerializerInterface $serializer): JsonResponse
     {
         $problems = $entityManager->getRepository(Problems::class)->findAll();
@@ -32,7 +32,7 @@ class ProblemController extends AbstractController
         return new JsonResponse($json,200, [], true);
     }
 
-    #[Route('/api/problems', name:'create_problem', methods: ['POST'])]
+    #[Route('/api/problem', name:'create_problem', methods: ['POST'])]
     public function createProblem(Request $request, ValidatorInterface $validator, EntityManagerInterface $entityManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
