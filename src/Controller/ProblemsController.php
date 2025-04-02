@@ -89,9 +89,24 @@ class ProblemsController extends AbstractController
     }
 
     #[Route('/api/problems', name: 'get_problems', methods: ['GET'])]
-    public function getProblems(SerializerInterface $serializer): JsonResponse
+    public function getProblems(Request $request, SerializerInterface $serializer): JsonResponse
     {
-        $problems = $this->entity_manager->getRepository(Problems::class)->findAll();
+        // URL Parameter extract
+        $category = $request->query->get('category');
+        $status = $request->query->get('status');
+
+        $criteria = [];
+
+        if ($category) {
+            $criteria['category'] = $category;
+        }
+
+        if ($status) {
+            $criteria['status'] = $status;
+        }
+
+        // Look for problems with criterias
+        $problems = $this->entity_manager->getRepository(Problems::class)->findBy($criteria);
         
         $json = $serializer->serialize($problems, 'json', ['groups' => 'problem_read']);
 
