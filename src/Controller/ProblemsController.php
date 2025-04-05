@@ -116,16 +116,71 @@ class ProblemsController extends AbstractController
     #[Route('/api/problems/{id}', name: 'get_problem_by_id', methods: ['GET'])]
     public function getProblemById(string $id, SerializerInterface $serializer): JsonResponse
     {
-        // Problem anhand der ID suchen
+        // Find problem with UUID
         $problem = $this->entity_manager->getRepository(Problems::class)->find(Uuid::fromString($id));
 
         if (!$problem) {
             return new JsonResponse(['error' => 'Problem not found'], 404);
         }
 
-        // Problem serialisieren
         $json = $serializer->serialize($problem, 'json', ['groups' => 'problem_read']);
 
         return new JsonResponse($json, 200, [], true);
+    }
+
+    #[Route('/api/problems/{id}', name: 'update_problem_status', methods: ['PATCH'])]
+    public function updateProblemStatus(string $id, Request $request): JsonResponse
+    {
+        // Extract Token from Header
+        $authHeader = $request->headers->get('Authorization');
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            return new JsonResponse(['error' => 'Missing token'], 401);
+        }
+
+        $tokenString = substr($authHeader, 7); // remove "Bearer "
+        $secretKey = new SymmetricKey(base64_decode(file_get_contents($this->pasetoKeyPath)));
+
+        try {
+            $parsedToken = (new Parser())
+                ->setKey($secretKey)
+                ->setPurpose(Purpose::local())
+                ->parse($tokenString);
+
+            $userId = $parsedToken->get('user_id');
+            $userRole = $parsedToken->get('role');  // Role from Token
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => 'Invalid token'], 401);
+        }
+
+        // Find user with UUID
+        $user = $this->entity_manager->getRepository(Users::class)->find(Uuid::fromString($userId));
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        // Test, if user has the rights
+        if (!in_array($userRole, ['admin', 'city_admin', 'user'])) { // Erneut testen, wenn admin oder city_admin vorhanden
+            echo $userRole;
+            return new JsonResponse(['error' => 'Permission denied'], 403); // if rights aren't there
+        }
+
+        // Find problem with UUID
+        $problem = $this->entity_manager->getRepository(Problems::class)->find(Uuid::fromString($id));
+        if (!$problem) {
+            return new JsonResponse(['error' => 'Problem not found'], 404);
+        }
+
+        // get Status from Request
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['status']) || !in_array($data['status'], ['in Bearbeitung', 'erledigt'])) {
+            return new JsonResponse(['error' => 'Invalid status'], 400);
+        }
+
+        // Change Status
+        $problem->setStatus($data['status']);
+        $this->entity_manager->flush();
+
+        return new JsonResponse(['message' => 'Problem status updated successfully'], 200);
     }
 }
