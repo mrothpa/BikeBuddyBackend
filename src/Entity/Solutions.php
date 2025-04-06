@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: SolutionsRepository::class)]
 class Solutions
@@ -15,20 +16,25 @@ class Solutions
     #[ORM\Column(type: UuidType::NAME, unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
+    #[Groups(['solution'])]
     private ?Uuid $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'solutions')]
+    #[ORM\ManyToOne(inversedBy: 'solution')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['solution'])]
     private ?Users $user = null;
 
-    #[ORM\ManyToOne(inversedBy: 'solutions')]
+    #[ORM\ManyToOne(inversedBy: 'solution')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['solution'])]
     private ?Problems $problem = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['solution'])]
     private ?string $description = null;
 
     #[ORM\Column]
+    // #[Groups(['solutions'])]
     private ?\DateTimeImmutable $created_at = null;
 
     public function getId(): ?Uuid

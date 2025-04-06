@@ -16,7 +16,7 @@ class Problems
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
-    #[Groups(['problem_read'])]
+    #[Groups(['problem_read', 'solution'])]
     private ?Uuid $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'problems')]
@@ -25,11 +25,11 @@ class Problems
     private ?Users $user = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['problem_read'])]
+    #[Groups(['problem_read', 'solution'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['problem_read'])]
+    #[Groups(['problem_read', 'solution'])]
     private ?string $description = null;
 
     #[ORM\Column]
