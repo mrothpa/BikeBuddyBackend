@@ -95,4 +95,73 @@ class UpvotesController extends AbstractController
 
         return new JsonResponse(['message' => 'Problem upvoted successfully'], Response::HTTP_CREATED);
     }
+
+    #[Route('/api/problems/{id}/downvote', name: "api_problem_downvote", methods: ["DELETE"])]
+    public function downvoteProblem(string $id, EntityManagerInterface $entityManager, Request $request, ValidatorInterface $validator): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        // token from header
+        $authHeader = $request->headers->get('Authorization');
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            return new JsonResponse(['error' => 'Missing token'], 401);
+        }
+
+        $tokenString = substr($authHeader, 7); // "Bearer " entfernen
+        $secretKey = new SymmetricKey(base64_decode(file_get_contents($this->pasetoKeyPath)));
+
+        try {
+            $parsedToken = (new Parser())
+                ->setKey($secretKey)
+                ->setPurpose(Purpose::local())
+                ->parse($tokenString);
+
+            $userId = $parsedToken->get('user_id');
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => 'Invalid token'], 401);
+        }
+
+        // Find user with UUID
+        $user = $entityManager->getRepository(Users::class)->find(Uuid::fromString($userId));
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        // Find problem
+        $problem = $entityManager->getRepository(Problems::class)->find(Uuid::fromString($id));
+        if (!$problem) {
+            return new JsonResponse(['error' => 'Problem not found'], 404);
+        }
+
+        // check if user already upvoted problem
+        $existingUpvote = $entityManager->getRepository(Upvotes::class)->findOneBy([
+            'user' => $user,
+            'problem' => $problem,
+        ]);
+
+        if (!$existingUpvote) {
+            return new JsonResponse(['error' => 'Upvote not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // make upvote
+        $upvote = new Upvotes();
+        $upvote->setUser($user);
+        $upvote->setProblem($problem);
+        $upvote->setCreatedAt(new \DateTimeImmutable());
+
+        $errors = $validator->validate($upvote);
+        if (count($errors) > 0) {
+            return new JsonResponse(['error' => 'Validation failed', 'details' => (string) $errors], 400);
+        }
+
+        // remove upvote
+        $entityManager->remove($existingUpvote);
+        $entityManager->flush();
+
+        // Upvote-Zähler im Problem verringern (optional)
+        $problem->setUpvotesInt($problem->getUpvotesInt() - 1);
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'Problem removed successfully'], Response::HTTP_OK);
+    }
 }
