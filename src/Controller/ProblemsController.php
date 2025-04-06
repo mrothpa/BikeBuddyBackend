@@ -183,4 +183,53 @@ class ProblemsController extends AbstractController
 
         return new JsonResponse(['message' => 'Problem status updated successfully'], 200);
     }
+
+    #[Route('/api/problems/{id}', name: 'delete_problem', methods: ['DELETE'])]
+    public function deleteProblem(string $id, Request $request): JsonResponse
+    {
+        // Extract Token from Header
+        $authHeader = $request->headers->get('Authorization');
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            return new JsonResponse(['error' => 'Missing token'], 401);
+        }
+
+        $tokenString = substr($authHeader, 7); // remove "Bearer "
+        $secretKey = new SymmetricKey(base64_decode(file_get_contents($this->pasetoKeyPath)));
+
+        try {
+            $parsedToken = (new Parser())
+                ->setKey($secretKey)
+                ->setPurpose(Purpose::local())
+                ->parse($tokenString);
+
+            $userId = $parsedToken->get('user_id');
+            $userRole = $parsedToken->get('role');  // Role from Token
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => 'Invalid token'], 401);
+        }
+
+        // Find user with UUID
+        $user = $this->entity_manager->getRepository(Users::class)->find(Uuid::fromString($userId));
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        // Test, if user has the rights
+        if (!in_array($userRole, ['admin', 'city_admin', 'user'])) { // Erneut testen, wenn admin oder city_admin vorhanden
+            echo $userRole;
+            return new JsonResponse(['error' => 'Permission denied'], 403); // if rights aren't there
+        }
+
+        // Find problem with UUID
+        $problem = $this->entity_manager->getRepository(Problems::class)->find(Uuid::fromString($id));
+        if (!$problem) {
+            return new JsonResponse(['error' => 'Problem not found'], 404);
+        }
+
+        // delete problem
+        $this->entity_manager->remove($problem);
+        $this->entity_manager->flush();
+
+        return new JsonResponse(['message' => 'Problem deleted successfully'], 200);
+    }
 }
