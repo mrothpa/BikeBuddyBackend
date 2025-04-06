@@ -36,12 +36,12 @@ class SolutionsController extends AbstractController
     {
         $solutions = $entityManager->getRepository(Solutions::class)->findAll();
 
-        // Wenn keine Lösungen gefunden werden, wird eine leere Liste zurückgegeben
+        // if no solutions, empty list
         if (!$solutions) {
             return new JsonResponse([], 200);
         }
 
-        // Serialisierung der Lösungen in JSON
+        // convert to json
         $data = $serializer->serialize($solutions, 'json', ['groups' => ['solution']]);
 
         return new JsonResponse($data, 200, [], true);
@@ -111,5 +111,25 @@ class SolutionsController extends AbstractController
         $this->entity_manager->flush();
 
         return new JsonResponse(['message' => 'solution created successfully'], 201);
+    }
+
+    #[Route(path:'/api/problems/{id}/solutions', name:'get_solutions_from_problem', methods: ['GET'])]
+    public function getProblemSolutions(string $id, EntityManagerInterface $entityManager, SerializerInterface $serializer): JsonResponse
+    {
+        $problem = $entityManager->getRepository(Problems::class)->find($id);
+
+        if (!$problem) {
+            return new JsonResponse(['error' => 'Problem not found'], 404);
+        }
+
+        $solutions = $problem->getSolutions();
+
+        if (!$solutions) {
+            return new JsonResponse([]);
+        }
+
+        $data = $serializer->serialize($solutions, 'json', ['groups' => ['solution']]);
+
+        return new JsonResponse($data, 200, [], true);
     }
 }
