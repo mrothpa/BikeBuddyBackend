@@ -57,10 +57,20 @@ class Problems
     #[ORM\OneToMany(targetEntity: Solutions::class, mappedBy: 'problem')]
     private Collection $solutions;
 
+    /**
+     * @var Collection<int, Upvotes>
+     */
+    #[ORM\OneToMany(targetEntity: Upvotes::class, mappedBy: 'problem')]
+    private Collection $upvotes;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $upvotes_int = null;
+
     public function __construct()
     {
         $this->id = Uuid::v4();
         $this->solutions = new ArrayCollection();
+        $this->upvotes = new ArrayCollection();
     }
 
     public function getId(): ?Uuid
@@ -190,6 +200,48 @@ class Problems
                 $solution->setProblem(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Upvotes>
+     */
+    public function getUpvotes(): Collection
+    {
+        return $this->upvotes;
+    }
+
+    public function addUpvote(Upvotes $upvote): static
+    {
+        if (!$this->upvotes->contains($upvote)) {
+            $this->upvotes->add($upvote);
+            $upvote->setProblem($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUpvote(Upvotes $upvote): static
+    {
+        if ($this->upvotes->removeElement($upvote)) {
+            // set the owning side to null (unless already changed)
+            if ($upvote->getProblem() === $this) {
+                $upvote->setProblem(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getUpvotesInt(): ?int
+    {
+        return $this->upvotes_int;
+    }
+
+    public function setUpvotesInt(?int $upvotes_int): static
+    {
+        $this->upvotes_int = $upvotes_int;
 
         return $this;
     }
