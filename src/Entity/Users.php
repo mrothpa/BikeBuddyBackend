@@ -39,10 +39,17 @@ class Users implements PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Problems::class, mappedBy: 'user_id')]
     private Collection $problems;
 
+    /**
+     * @var Collection<int, Solutions>
+     */
+    #[ORM\OneToMany(targetEntity: Solutions::class, mappedBy: 'user')]
+    private Collection $solutions;
+
     public function __construct()
     {
         $this->id = Uuid::v4();
         $this->problems = new ArrayCollection();
+        $this->solutions = new ArrayCollection();
     }
 
     public function getId(): ?Uuid
@@ -133,6 +140,36 @@ class Users implements PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($problem->getUser() === $this) {
                 $problem->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Solutions>
+     */
+    public function getSolutions(): Collection
+    {
+        return $this->solutions;
+    }
+
+    public function addSolution(Solutions $solution): static
+    {
+        if (!$this->solutions->contains($solution)) {
+            $this->solutions->add($solution);
+            $solution->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSolution(Solutions $solution): static
+    {
+        if ($this->solutions->removeElement($solution)) {
+            // set the owning side to null (unless already changed)
+            if ($solution->getUser() === $this) {
+                $solution->setUser(null);
             }
         }
 

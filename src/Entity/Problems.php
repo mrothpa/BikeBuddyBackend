@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ProblemsRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -49,9 +51,16 @@ class Problems
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
 
+    /**
+     * @var Collection<int, Solutions>
+     */
+    #[ORM\OneToMany(targetEntity: Solutions::class, mappedBy: 'problem')]
+    private Collection $solutions;
+
     public function __construct()
     {
         $this->id = Uuid::v4();
+        $this->solutions = new ArrayCollection();
     }
 
     public function getId(): ?Uuid
@@ -151,6 +160,36 @@ class Problems
     public function setCreatedAt(\DateTimeImmutable $created_at): static
     {
         $this->created_at = $created_at;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Solutions>
+     */
+    public function getSolutions(): Collection
+    {
+        return $this->solutions;
+    }
+
+    public function addSolution(Solutions $solution): static
+    {
+        if (!$this->solutions->contains($solution)) {
+            $this->solutions->add($solution);
+            $solution->setProblem($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSolution(Solutions $solution): static
+    {
+        if ($this->solutions->removeElement($solution)) {
+            // set the owning side to null (unless already changed)
+            if ($solution->getProblem() === $this) {
+                $solution->setProblem(null);
+            }
+        }
 
         return $this;
     }
