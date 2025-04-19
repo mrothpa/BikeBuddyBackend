@@ -64,6 +64,7 @@ class Problems
     private Collection $upvotes;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['problem_read'])]
     private ?int $upvotes_int = null;
 
     public function __construct()
