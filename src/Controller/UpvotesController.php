@@ -164,4 +164,48 @@ class UpvotesController extends AbstractController
 
         return new JsonResponse(['message' => 'Problem removed successfully'], Response::HTTP_OK);
     }
+
+    #[Route('/api/problems/{id}/upvoted', name: 'api_problem_upvoted', methods: ['GET'])]
+    public function checkUpvoteStatus(string $id, EntityManagerInterface $entityManager, Request $request): JsonResponse
+    {
+        // Token aus dem Authorization-Header extrahieren
+        $authHeader = $request->headers->get('Authorization');
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            return new JsonResponse(['error' => 'Missing token'], 401);
+        }
+
+        $tokenString = substr($authHeader, 7);
+        $secretKey = new SymmetricKey(base64_decode(file_get_contents($this->pasetoKeyPath)));
+
+        try {
+            $parsedToken = (new Parser())
+                ->setKey($secretKey)
+                ->setPurpose(Purpose::local())
+                ->parse($tokenString);
+
+            $userId = $parsedToken->get('user_id');
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => 'Invalid token'], 401);
+        }
+
+        // Nutzer laden
+        $user = $entityManager->getRepository(Users::class)->find(Uuid::fromString($userId));
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        // Problem laden
+        $problem = $entityManager->getRepository(Problems::class)->find(Uuid::fromString($id));
+        if (!$problem) {
+            return new JsonResponse(['error' => 'Problem not found'], 404);
+        }
+
+        // Prüfung, ob ein Upvote existiert
+        $existingUpvote = $entityManager->getRepository(Upvotes::class)->findOneBy([
+            'user' => $user,
+            'problem' => $problem,
+        ]);
+
+        return new JsonResponse(['upvoted' => $existingUpvote !== null], Response::HTTP_OK);
+    }
 }
