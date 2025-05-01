@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Users;
 use App\Entity\Problems;
+use App\Entity\Solutions;
+use App\Entity\Upvotes;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -224,6 +226,18 @@ class ProblemsController extends AbstractController
         $problem = $this->entity_manager->getRepository(Problems::class)->find(Uuid::fromString($id));
         if (!$problem) {
             return new JsonResponse(['error' => 'Problem not found'], 404);
+        }
+
+        // Deleta all upvotes
+        $upvotes = $this->entity_manager->getRepository(Upvotes::class)->findBy(['problem' => $problem]);
+        foreach ($upvotes as $upvote) {
+            $this->entity_manager->remove($upvote);
+        }
+
+        // Deleta all solutions
+        $solutions = $this->entity_manager->getRepository(Solutions::class)->findBy(['problem' => $problem]);
+        foreach ($solutions as $solution) {
+            $this->entity_manager->remove($solution);
         }
 
         // delete problem
