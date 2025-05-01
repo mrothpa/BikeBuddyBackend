@@ -16,18 +16,18 @@ class Users implements PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
-    #[Groups(['user_read', 'problem_read', 'solution'])]
+    #[Groups(['user_read', 'problem_read', 'solution', 'problem_read_admin'])]
     private ?Uuid $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(['user_read', 'problem_read', 'solution'])]
+    #[Groups(['user_read', 'problem_read', 'solution', 'problem_read_admin'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
     #[ORM\Column(length: 31)]
-    #[Groups(['user_read', 'problem_read', 'solution'])]
+    #[Groups(['user_read', 'problem_read', 'solution', 'problem_read_admin'])]
     private ?string $role = null;
 
     #[ORM\Column]

@@ -130,6 +130,56 @@ class ProblemsController extends AbstractController
         return new JsonResponse($json, 200, [], true);
     }
 
+    #[Route('/api/admin/problems', name: 'get_problems_admin', methods: ['POST'])]
+    public function getProblemsAdmin(Request $request, SerializerInterface $serializer): JsonResponse
+    {
+        // Token aus Header extrahieren
+        $authHeader = $request->headers->get('Authorization');
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            return new JsonResponse(['error' => 'Missing token'], 401);
+        }
+
+        $tokenString = substr($authHeader, 7); // "Bearer " entfernen
+        $secretKey = new SymmetricKey(base64_decode(file_get_contents($this->pasetoKeyPath)));
+
+        try {
+            $parsedToken = (new Parser())
+                ->setKey($secretKey)
+                ->setPurpose(Purpose::local())
+                ->parse($tokenString);
+
+            $userRole = $parsedToken->get('role');
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => 'Invalid token'], 401);
+        }
+
+        // Nur wenn Rolle "admin" ist, fortfahren
+        if ($userRole !== 'admin') {
+            return new JsonResponse(['error' => 'Permission denied'], 403);
+        }
+
+        // URL-Parameter auslesen
+        $category = $request->query->get('category');
+        $status = $request->query->get('status');
+
+        $criteria = [];
+
+        if ($category) {
+            $criteria['category'] = $category;
+        }
+
+        if ($status) {
+            $criteria['status'] = $status;
+        }
+
+        // Probleme filtern
+        $problems = $this->entity_manager->getRepository(Problems::class)->findBy($criteria);
+        $json = $serializer->serialize($problems, 'json', ['groups' => 'problem_read_admin']);
+
+        return new JsonResponse($json, 200, [], true);
+    }
+
+
     #[Route('/api/problems/{id}', name: 'update_problem_status', methods: ['PATCH'])]
     public function updateProblemStatus(string $id, Request $request): JsonResponse
     {

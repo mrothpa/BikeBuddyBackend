@@ -16,39 +16,40 @@ class Problems
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
-    #[Groups(['problem_read', 'solution'])]
+    #[Groups(['problem_read', 'solution', 'problem_read_admin'])]
     private ?Uuid $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'problems')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['problem_read'])]
+    #[Groups(['problem_read', 'problem_read_admin'])]
     private ?Users $user = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['problem_read', 'solution'])]
+    #[Groups(['problem_read', 'solution', 'problem_read_admin'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['problem_read', 'solution'])]
+    #[Groups(['problem_read', 'solution', 'problem_read_admin'])]
     private ?string $description = null;
 
     #[ORM\Column]
-    #[Groups(['problem_read'])]
+    #[Groups(['problem_read', 'problem_read_admin'])]
     private ?float $latitude = null;
 
     #[ORM\Column]
-    #[Groups(['problem_read'])]
+    #[Groups(['problem_read', 'problem_read_admin'])]
     private ?float $longitude = null;
 
     #[ORM\Column(length: 31)]
-    #[Groups(['problem_read'])]
+    #[Groups(['problem_read', 'problem_read_admin'])]
     private ?string $category = null;
 
     #[ORM\Column(length: 31)]
-    #[Groups(['problem_read'])]
+    #[Groups(['problem_read', 'problem_read_admin'])]
     private ?string $status = null;
 
     #[ORM\Column]
+    #[Groups(['problem_read_admin'])]
     private ?\DateTimeImmutable $created_at = null;
 
     /**
@@ -64,7 +65,7 @@ class Problems
     private Collection $upvotes;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['problem_read'])]
+    #[Groups(['problem_read', 'problem_read_admin'])]
     private ?int $upvotes_int = null;
 
     public function __construct()
