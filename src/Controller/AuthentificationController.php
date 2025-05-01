@@ -98,7 +98,7 @@ class AuthentificationController extends AbstractController
             ->set('role', $user->getRole()) // Benutzerrolle setzen
             ->toString(); // Token als String generieren
 
-        return new JsonResponse(['token' => $token]);
+        return new JsonResponse(['token' => $token, 'role' => $user->getRole()]);
     }
 }
 

@@ -159,7 +159,7 @@ class ProblemsController extends AbstractController
         }
 
         // Test, if user has the rights
-        if (!in_array($userRole, ['admin', 'city_admin', 'user'])) { // Erneut testen, wenn admin oder city_admin vorhanden
+        if (!in_array($userRole, ['admin', 'city_admin'])) { // Erneut testen, wenn admin oder city_admin vorhanden
             echo $userRole;
             return new JsonResponse(['error' => 'Permission denied'], 403); // if rights aren't there
         }
@@ -215,7 +215,7 @@ class ProblemsController extends AbstractController
         }
 
         // Test, if user has the rights
-        if (!in_array($userRole, ['admin', 'city_admin', 'user'])) { // Erneut testen, wenn admin oder city_admin vorhanden
+        if (!in_array($userRole, ['admin', 'city_admin'])) { // Erneut testen, wenn admin oder city_admin vorhanden
             echo $userRole;
             return new JsonResponse(['error' => 'Permission denied'], 403); // if rights aren't there
         }
