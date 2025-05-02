@@ -49,7 +49,7 @@ class Problems
     private ?string $status = null;
 
     #[ORM\Column]
-    #[Groups(['problem_read_admin'])]
+    #[Groups(['problem_read', 'problem_read_admin'])]
     private ?\DateTimeImmutable $created_at = null;
 
     /**
