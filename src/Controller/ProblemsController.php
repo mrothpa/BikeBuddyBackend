@@ -87,7 +87,7 @@ class ProblemsController extends AbstractController
         $this->entity_manager->persist($problem);
         $this->entity_manager->flush();
 
-        return new JsonResponse(['message' => 'Problem created successfully'], 201);
+        return new JsonResponse(['message' => 'Problem created successfully', 'id' => $problem->getId()->toString()], 201);
     }
 
     #[Route('/api/problems', name: 'get_problems', methods: ['GET'])]
